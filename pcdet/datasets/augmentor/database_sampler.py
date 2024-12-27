@@ -144,6 +144,9 @@ class DataBaseSampler(object):
 
         Returns:
         """
+        if road_planes is None:
+            return gt_boxes, np.zeros(gt_boxes.shape[0], dtype=np.float32)  # Return default mv_height
+
         a, b, c, d = road_planes
         center_cam = calib.lidar_to_rect(gt_boxes[:, 0:3])
         cur_height_cam = (-d - a * center_cam[:, 0] - c * center_cam[:, 2]) / b
@@ -160,10 +163,10 @@ class DataBaseSampler(object):
         points = data_dict['points']
         if self.sampler_cfg.get('USE_ROAD_PLANE', False):
             sampled_gt_boxes, mv_height = self.put_boxes_on_road_planes(
-                sampled_gt_boxes, data_dict['road_plane'], data_dict['calib']
+                sampled_gt_boxes, data_dict.get('road_plane', None), data_dict['calib']
             )
-            data_dict.pop('calib')
-            data_dict.pop('road_plane')
+            data_dict.pop('calib', None)
+            data_dict.pop('road_plane', None)
 
         obj_points_list = []
         if self.use_shared_memory:
